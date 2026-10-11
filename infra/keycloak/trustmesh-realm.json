@@ -1,0 +1,90 @@
+{
+  "realm": "trustmesh",
+  "enabled": true,
+  "displayName": "TrustMesh Identity Lab",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "sslRequired": "external",
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 28800,
+  "eventsEnabled": true,
+  "eventsExpiration": 604800,
+  "eventsListeners": ["jboss-logging"],
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": false,
+  "roles": { "realm": [{ "name": "soc-analyst" }, { "name": "employee" }] },
+  "clients": [
+    {
+      "clientId": "trustmesh-console",
+      "name": "TrustMesh SOC Console",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "${TRUSTMESH_CONSOLE_SECRET}",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:3000/api/auth/callback"],
+      "webOrigins": ["http://localhost:3000"],
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "protocolMappers": [{
+        "name": "console-audience",
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-audience-mapper",
+        "config": { "included.client.audience": "trustmesh-console", "access.token.claim": "true", "id.token.claim": "false" }
+      }, {
+        "name": "console-roles",
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-usermodel-realm-role-mapper",
+        "config": {
+          "claim.name": "realm_roles",
+          "jsonType.label": "String",
+          "multivalued": "true",
+          "id.token.claim": "true",
+          "access.token.claim": "true"
+        }
+      }]
+    },
+    {
+      "clientId": "trustmesh-reader",
+      "name": "Read-only identity evidence connector",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "${TRUSTMESH_READER_SECRET}",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "analyst",
+      "enabled": true,
+      "firstName": "Security",
+      "lastName": "Analyst",
+      "email": "analyst@example.test",
+      "emailVerified": true,
+      "realmRoles": ["soc-analyst"],
+      "credentials": [{ "type": "password", "value": "${TRUSTMESH_ANALYST_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "alice",
+      "enabled": true,
+      "firstName": "Alice",
+      "lastName": "Employee",
+      "email": "alice@example.test",
+      "emailVerified": true,
+      "realmRoles": ["employee"],
+      "credentials": [{ "type": "password", "value": "${TRUSTMESH_EMPLOYEE_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "service-account-trustmesh-reader",
+      "enabled": true,
+      "serviceAccountClientId": "trustmesh-reader",
+      "clientRoles": { "realm-management": ["view-users", "query-users", "view-events", "view-realm", "view-clients"] }
+    }
+  ]
+}

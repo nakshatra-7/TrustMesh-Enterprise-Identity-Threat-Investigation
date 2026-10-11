@@ -1,0 +1,52 @@
+{
+  "name": "trustmesh",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "infra:up": "docker compose up -d",
+    "infra:stop": "docker compose stop",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "dev": "next dev --hostname 127.0.0.1",
+    "worker": "tsx src/worker/main.ts",
+    "worker:agents": "node --import tsx src/worker/investigations.ts",
+    "mcp": "node --import tsx src/mcp/main.ts",
+    "demo:seed": "node --import tsx scripts/seed-demo.ts",
+    "check:demo": "node --import tsx scripts/check-demo.ts",
+    "check:runtime": "node --import tsx scripts/check-runtime.ts",
+    "demo:live-check": "node --import tsx scripts/prepare-live-check.ts",
+    "demo": "node --import tsx scripts/demo.ts",
+    "collect": "tsx scripts/collect.ts",
+    "check:identity": "tsx scripts/check-identity.ts",
+    "check:identity-handlers": "node --import tsx scripts/check-identity-handlers.ts",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "bullmq": "^5.58.0",
+    "dotenv": "^17.2.0",
+    "jose": "^6.1.0",
+    "next": "16.3.5",
+    "openai": "^7.25.0",
+    "openid-client": "6.8.8",
+    "pg": "8.23.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "@types/pg": "^8.15.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "tsx": "4.23.15",
+    "typescript": "^5.9.0"
+  }
+}

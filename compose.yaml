@@ -1,0 +1,52 @@
+name: trustmesh
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_DB: trustmesh
+      POSTGRES_USER: trustmesh
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run npm run setup}
+    ports: ["127.0.0.1:55432:5432"]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/init.sql:/docker-entrypoint-initdb.d/01-keycloak.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trustmesh -d trustmesh"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  redis:
+    image: redis:7.4.5-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["127.0.0.1:56379:6379"]
+    volumes: ["redis-data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.4
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: trustmesh
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: bootstrap-admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Run npm run setup}
+      KC_HOSTNAME: http://localhost:8080
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      TRUSTMESH_CONSOLE_SECRET: ${KEYCLOAK_CONSOLE_SECRET}
+      TRUSTMESH_READER_SECRET: ${KEYCLOAK_READER_SECRET}
+      TRUSTMESH_ANALYST_PASSWORD: ${ANALYST_PASSWORD}
+      TRUSTMESH_EMPLOYEE_PASSWORD: ${EMPLOYEE_PASSWORD}
+    ports: ["127.0.0.1:8080:8080"]
+    volumes: ["./infra/keycloak/trustmesh-realm.json:/opt/keycloak/data/import/trustmesh-realm.json:ro"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+volumes:
+  postgres-data:
+  redis-data:
